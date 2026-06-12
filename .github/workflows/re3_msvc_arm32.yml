@@ -30,12 +30,12 @@ jobs:
         "--quiet", "--norestart", "--force", "--wait" -Wait -PassThru
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@v1.0.2
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
       with:
         submodules: 'true'
     - if: ${{ matrix.platform }} == "win-x86-librw_gl3_glfw-mss"
       name: Download glfw
-      uses: carlosperate/download-file-action@v1.0.3
+      uses: carlosperate/download-file-action@v3.0.3
       with:
         file-url: ${{env.GLFW_URL}}
     - if: ${{ matrix.platform }} == "win-x86-librw_gl3_glfw-mss"
