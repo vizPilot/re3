@@ -35,7 +35,7 @@ jobs:
         submodules: 'true'
     - if: ${{ matrix.platform }} == "win-x86-librw_gl3_glfw-mss"
       name: Download glfw
-      uses: carlosperate/download-file-action@v3.0.3
+      uses: carlosperate/download-file-action@v2
       with:
         file-url: ${{env.GLFW_URL}}
     - if: ${{ matrix.platform }} == "win-x86-librw_gl3_glfw-mss"
@@ -61,7 +61,7 @@ jobs:
         mv ./vendor/mpg123/dist/Win32/libmpg123-0.dll ./gamefiles/
         mv ./vendor/openal-soft/dist/Win32/OpenAL32.dll ./gamefiles/
     - name: Upload artifact to actions
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: re3_${{matrix.buildtype}}_${{matrix.platform}}
         path: ./gamefiles/*
