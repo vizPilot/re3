@@ -25,7 +25,6 @@
 
 #include <ddraw.h>
 #include <DShow.h>
-#include <Xinput.h>
 #pragma warning( pop )
 
 #define WM_GRAPHNOTIFY	WM_USER+13
@@ -2566,14 +2565,10 @@ HRESULT _InputInitialise()
 {
 	HRESULT hr;
 
-	// Crear un objeto de XInput
-	DWORD dwUserIndex = 0; // Índice del controlador de juegos
-	XINPUT_STATE xinputObject;
-
-	// Obtener el estado del controlador de juegos
-	DWORD result = XInputGetState(dwUserIndex, &xinputObject);
-	if (result != ERROR_SUCCESS)
-		return HRESULT_FROM_WIN32(result);
+	// Create a DInput object
+	if (FAILED(hr = DirectInput8Create(GetModuleHandle(nil), DIRECTINPUT_VERSION,
+		IID_IDirectInput8, (VOID**)&PSGLOBAL(dinterface), nil)))
+		return hr;
 		
 	return S_OK;
 }
@@ -2583,13 +2578,8 @@ HRESULT _InputInitialiseMouse()
 	HRESULT hr;
 
 	// Obtain an interface to the system mouse device.
-	DWORD dwUserIndex = 0; // Índice del controlador de juegos
-	XINPUT_CAPABILITIES capabilities;
-
-	// Obtener las capacidades del controlador de juegos
-	DWORD result = XInputGetCapabilities(dwUserIndex, XINPUT_FLAG_GAMEPAD, &capabilities);
-	if (result != ERROR_SUCCESS)
-		return HRESULT_FROM_WIN32(result);
+	if (FAILED(hr = PSGLOBAL(dinterface)->CreateDevice(GUID_SysMouse, &PSGLOBAL(mouse), nil)))
+		return hr;
 	
 	// Set the data format to "mouse format" - a predefined data format 
 	//
@@ -2598,14 +2588,9 @@ HRESULT _InputInitialiseMouse()
 	//
 	// This tells DirectInput that we will be passing a
 	// DIMOUSESTATE2 structure to IDirectInputDevice::GetDeviceState.
-	if (result == ERROR_SUCCESS)
-	{
-		// Acceder a los datos del mouse en 'state' (por ejemplo, state.Gamepad)
-	}
-	else
-	{
+	if (FAILED(hr = PSGLOBAL(mouse)->SetDataFormat(&c_dfDIMouse2)))
 		return hr;
-	}
+
 	
 	if( FAILED( hr = PSGLOBAL(mouse)->SetCooperativeLevel( PSGLOBAL(window), DISCL_NONEXCLUSIVE | DISCL_FOREGROUND ) ) )
 		return hr;
@@ -2918,11 +2903,8 @@ BOOL CALLBACK _InputEnumDevicesCallback( const DIDEVICEINSTANCE* pdidInstance, V
 	if( hr != S_OK )
 		return DIENUM_CONTINUE;
 
-	DWORD dwUserIndex = 0; // Índice del controlador de juegos
-	XINPUT_STATE state;
-
-	DWORD result = XInputGetState(dwUserIndex, &state);
-	if (result == ERROR_SUCCESS)
+	hr = (*pJoystick)->SetDataFormat(&c_dfDIJoystick2);
+	if (hr != S_OK)
 	{
 		(*pJoystick)->Release();
 		return DIENUM_CONTINUE;
